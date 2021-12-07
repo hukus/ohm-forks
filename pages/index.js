@@ -1,10 +1,38 @@
-import Head from 'next/head'
-import Image from 'next/image'
-import styles from '../styles/Home.module.css'
-import { useState } from 'react'
+import Head from 'next/head';
+import styles from '../styles/Home.module.css';
+import { useState } from 'react';
 
 export default function Home() {
-  const [result, setResult] = useState({});
+  const [price, setPrice] = useState('unknown');
+
+  const body = {
+    variables: {},
+    query:
+      '{\n  protocolMetrics(first: 1, orderBy: timestamp, orderDirection: desc) {\n    id\n    timestamp\n    ohmCirculatingSupply\n    sOhmCirculatingSupply\n    totalSupply\n    ohmPrice\n    marketCap\n    totalValueLocked\n    treasuryRiskFreeValue\n    treasuryMarketValue\n    nextEpochRebase\n    nextDistributedOhm\n    treasuryDaiRiskFreeValue\n    treasuryFraxMarketValue\n    treasuryDaiMarketValue\n    treasuryFraxRiskFreeValue\n    treasuryXsushiMarketValue\n    treasuryWETHMarketValue\n    treasuryLusdRiskFreeValue\n    treasuryLusdMarketValue\n    currentAPY\n    runway10k\n    runway20k\n    runway50k\n    runway7dot5k\n    runway5k\n    runway2dot5k\n    runwayCurrent\n    holders\n    treasuryOhmDaiPOL\n    treasuryOhmFraxPOL\n    __typename\n  }\n}\n',
+  };
+
+  const requestOptions = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  };
+
+  const fetchPrice = async () => {
+    const response = await fetch(
+      'https://api.thegraph.com/subgraphs/name/drondin/olympus-graph',
+      requestOptions
+    );
+    const result = await response.json();
+    const parsedPrice = result?.data?.protocolMetrics[0]?.ohmPrice;
+    if (parsedPrice) {
+      const numberPrice = Number(parsedPrice);
+      const twoDecimalPrice = Math.round(numberPrice * 100) / 100;
+      setPrice(String(twoDecimalPrice));
+    } else {
+      setPrice('still unknown');
+    }
+  };
+
   return (
     <div className={styles.container}>
       <Head>
@@ -14,33 +42,15 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to OHM price monitor!
-        </h1>
-
+        <h1 className={styles.title}>Welcome to OHM price monitor!</h1>
         <p className={styles.description}>
           I am Hukus and I am trying to get the abachi.io whitelist :)
         </p>
-
-        <div className={styles.grid}>
-            <p>Find in-depth information about Next.js features and API.</p>
-          
-           <p>Learn about Next.js in an interactive course with quizzes!</p>
-                  </div>
+        <button onClick={fetchPrice}>Fetch Prices</button>
+        <p>
+          Current price: <b>${price}</b>
+        </p>
       </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <span className={styles.logo}>
-            <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-          </span>
-        </a>
-      </footer>
     </div>
-  )
+  );
 }
