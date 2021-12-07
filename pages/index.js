@@ -1,23 +1,26 @@
 import Head from 'next/head';
 import styles from '../styles/Home.module.css';
-import { useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 export default function Home() {
+  const [loading, setLoading] = useState(false);
   const [price, setPrice] = useState('unknown');
 
-  const body = {
-    variables: {},
-    query:
-      '{\n  protocolMetrics(first: 1, orderBy: timestamp, orderDirection: desc) {\n    id\n    timestamp\n    ohmCirculatingSupply\n    sOhmCirculatingSupply\n    totalSupply\n    ohmPrice\n    marketCap\n    totalValueLocked\n    treasuryRiskFreeValue\n    treasuryMarketValue\n    nextEpochRebase\n    nextDistributedOhm\n    treasuryDaiRiskFreeValue\n    treasuryFraxMarketValue\n    treasuryDaiMarketValue\n    treasuryFraxRiskFreeValue\n    treasuryXsushiMarketValue\n    treasuryWETHMarketValue\n    treasuryLusdRiskFreeValue\n    treasuryLusdMarketValue\n    currentAPY\n    runway10k\n    runway20k\n    runway50k\n    runway7dot5k\n    runway5k\n    runway2dot5k\n    runwayCurrent\n    holders\n    treasuryOhmDaiPOL\n    treasuryOhmFraxPOL\n    __typename\n  }\n}\n',
-  };
+  const fetchPrice = useCallback(async () => {
+    setLoading(true);
 
-  const requestOptions = {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  };
+    const body = {
+      variables: {},
+      query:
+        '{\n  protocolMetrics(first: 1, orderBy: timestamp, orderDirection: desc) {\n    id\n    timestamp\n    ohmCirculatingSupply\n    sOhmCirculatingSupply\n    totalSupply\n    ohmPrice\n    marketCap\n    totalValueLocked\n    treasuryRiskFreeValue\n    treasuryMarketValue\n    nextEpochRebase\n    nextDistributedOhm\n    treasuryDaiRiskFreeValue\n    treasuryFraxMarketValue\n    treasuryDaiMarketValue\n    treasuryFraxRiskFreeValue\n    treasuryXsushiMarketValue\n    treasuryWETHMarketValue\n    treasuryLusdRiskFreeValue\n    treasuryLusdMarketValue\n    currentAPY\n    runway10k\n    runway20k\n    runway50k\n    runway7dot5k\n    runway5k\n    runway2dot5k\n    runwayCurrent\n    holders\n    treasuryOhmDaiPOL\n    treasuryOhmFraxPOL\n    __typename\n  }\n}\n',
+    };
 
-  const fetchPrice = async () => {
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    };
+
     const response = await fetch(
       'https://api.thegraph.com/subgraphs/name/drondin/olympus-graph',
       requestOptions
@@ -31,7 +34,12 @@ export default function Home() {
     } else {
       setPrice('still unknown');
     }
-  };
+    setLoading(false);
+  }, [setLoading]);
+
+  useEffect(() => {
+    fetchPrice();
+  }, [fetchPrice]);
 
   return (
     <div className={styles.container}>
@@ -48,7 +56,7 @@ export default function Home() {
         </p>
         <button onClick={fetchPrice}>Fetch Prices</button>
         <p>
-          Current price: <b>${price}</b>
+          Current price: <b>${loading ? 'fetching...' : price}</b>
         </p>
       </main>
     </div>
