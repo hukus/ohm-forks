@@ -13,12 +13,11 @@ export default function Home() {
 
       <main className={styles.main}>
         <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
+          Welcome to OHM price monitor!
         </h1>
 
         <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
+          I am Hukus and I am trying to get the abachi.io whitelist :)
         </p>
 
         <div className={styles.grid}>
