@@ -5,6 +5,7 @@ import { useEffect, useState, useCallback } from 'react';
 export default function Home() {
   const [loading, setLoading] = useState(false);
   const [price, setPrice] = useState('unknown');
+  const [backing, setBacking] = useState('unknown');
 
   const fetchPrice = useCallback(async () => {
     setLoading(true);
@@ -26,13 +27,22 @@ export default function Home() {
       requestOptions
     );
     const result = await response.json();
-    const parsedPrice = result?.data?.protocolMetrics[0]?.ohmPrice;
-    if (parsedPrice) {
-      const numberPrice = Number(parsedPrice);
-      const twoDecimalPrice = Math.round(numberPrice * 100) / 100;
+
+    const parsedPrice = Number(result?.data?.protocolMetrics[0]?.ohmPrice);
+    const parsedSupply = Number(result?.data?.protocolMetrics[0]?.ohmCirculatingSupply);
+    const parsedMarketValue = Number(result?.data?.protocolMetrics[0]?.treasuryMarketValue);
+    const allResultsPresent = parsedPrice && parsedSupply && parsedMarketValue;
+
+    if (allResultsPresent) {
+      const twoDecimalPrice = Math.round(parsedPrice * 100) / 100;
       setPrice(String(twoDecimalPrice));
+
+      const backingPrice = parsedMarketValue / parsedSupply;
+      const twoDecimalBackingPrice = Math.round(backingPrice * 100) / 100;
+      setBacking(twoDecimalBackingPrice);
     } else {
       setPrice('still unknown');
+      setBacking('still unknown');
     }
     setLoading(false);
   }, [setLoading]);
@@ -52,11 +62,14 @@ export default function Home() {
       <main className={styles.main}>
         <h1 className={styles.title}>Welcome to OHM price monitor!</h1>
         <p className={styles.description}>
-          I am Hukus and I am trying to get the abachi.io whitelist :)
+          I am Hukus and I am trying to get the abachi.io whitelist :D
         </p>
         <button onClick={fetchPrice}>Fetch Prices</button>
         <p>
           Current price: <b>${loading ? 'fetching...' : price}</b>
+        </p>
+        <p>
+          Current backing: <b>${loading ? 'fetching...' : backing}</b>
         </p>
       </main>
     </div>
